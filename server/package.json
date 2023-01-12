@@ -10,7 +10,9 @@
     "watch": "nodemon src/server.js",
     "cluster": "pm2 start src/server.js -i max"
   },
-  "keywords": ["AAK"],
+  "keywords": [
+    "AAK"
+  ],
   "author": "",
   "license": "ISC",
   "jest": {
