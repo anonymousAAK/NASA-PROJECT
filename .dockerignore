@@ -1,3 +1,14 @@
 .git
+.github
+.vscode
+.idea
 
 */node_modules
+*/coverage
+
+*.md
+*.log
+visuals/
+
+server/.env
+server/.env.*

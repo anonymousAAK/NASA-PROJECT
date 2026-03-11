@@ -1,5 +1,6 @@
 const {
   getAllLaunches,
+  getLaunchStats,
   scheduleNewLaunch,
   existsLaunchWithId,
   abortLaunchById,
@@ -11,6 +12,11 @@ async function httpGetAllLaunches(req, res) {
   const { skip, limit } = getPagination(req.query);
   const launches = await getAllLaunches(skip, limit);
   return res.status(200).json(launches);
+}
+
+async function httpGetLaunchStats(req, res) {
+  const stats = await getLaunchStats();
+  return res.status(200).json(stats);
 }
 
 async function httpAddNewLaunch(req, res) {
@@ -42,6 +48,13 @@ async function httpAddNewLaunch(req, res) {
 
 async function httpAbortLaunch(req, res) {
   const launchId = Number(req.params.id);
+
+  if (!launchId || launchId < 0) {
+    return res.status(400).json({
+      error: 'Invalid launch ID',
+    });
+  }
+
   const existsLaunch = await existsLaunchWithId(launchId);
 
   if (!existsLaunch) {
@@ -65,6 +78,7 @@ async function httpAbortLaunch(req, res) {
 
 module.exports = {
   httpGetAllLaunches,
+  httpGetLaunchStats,
   httpAddNewLaunch,
   httpAbortLaunch,
 };

@@ -2,14 +2,13 @@ const axios = require('axios');
 
 const launches = require('./launches.mongo');
 const planets = require('./planets.mongo');
+const { config } = require('../config/config');
 
 const DEFAULT_FLIGHT_NUMBER = 100;
 
-const SPACEX_API_URL = 'https://api.spacexdata.com/v4/launches/query';
-
 async function populateLaunches() {
   console.log('Downloading launch data...');
-  const response = await axios.post(SPACEX_API_URL, {
+  const response = await axios.post(config.spacexApiUrl, {
     query: {},
     options: {
       pagination: false,
@@ -52,8 +51,6 @@ async function populateLaunches() {
       customers,
     };
 
-    // console.log(`${launch.flightNumber} ${launch.mission} ${launch.customers}`);
-
     await saveLaunch(launch);
   }
 }
@@ -83,9 +80,7 @@ function existsLaunchWithId(launchId) {
 }
 
 async function getLatestFlightNumber() {
-  const latestLaunch = await launches
-    .findOne() // return first item
-    .sort('-flightNumber'); // sort desc
+  const latestLaunch = await launches.findOne().sort('-flightNumber');
 
   if (!latestLaunch) {
     return DEFAULT_FLIGHT_NUMBER;
@@ -103,9 +98,50 @@ function getAllLaunches(skip, limit) {
         __v: 0,
       }
     )
-    .sort({ flightNumber: 1 }) // 1 asc, -1 desc
-    .skip(skip) // skip first 20
+    .sort({ flightNumber: 1 })
+    .skip(skip)
     .limit(limit);
+}
+
+async function getLaunchStats() {
+  const totalLaunches = await launches.countDocuments();
+  const upcomingLaunches = await launches.countDocuments({ upcoming: true });
+  const pastLaunches = await launches.countDocuments({ upcoming: false });
+  const successfulLaunches = await launches.countDocuments({
+    success: true,
+    upcoming: false,
+  });
+  const failedLaunches = await launches.countDocuments({
+    success: false,
+    upcoming: false,
+  });
+
+  const latestLaunch = await launches
+    .findOne({ upcoming: false })
+    .sort('-launchDate')
+    .select('mission launchDate rocket flightNumber -_id');
+
+  const nextLaunch = await launches
+    .findOne({ upcoming: true })
+    .sort('launchDate')
+    .select('mission launchDate rocket flightNumber target -_id');
+
+  const uniqueCustomers = await launches.distinct('customers');
+
+  return {
+    total: totalLaunches,
+    upcoming: upcomingLaunches,
+    past: pastLaunches,
+    successful: successfulLaunches,
+    failed: failedLaunches,
+    successRate:
+      pastLaunches > 0
+        ? `${((successfulLaunches / pastLaunches) * 100).toFixed(1)}%`
+        : 'N/A',
+    totalCustomers: uniqueCustomers.length,
+    latestLaunch: latestLaunch || null,
+    nextLaunch: nextLaunch || null,
+  };
 }
 
 async function saveLaunch(launch) {
@@ -152,15 +188,14 @@ async function abortLaunchById(launchId) {
     }
   );
 
-  return aborted.ok === 1 && aborted.nModified === 1;
+  return aborted.modifiedCount === 1;
 }
 
 module.exports = {
   loadLaunchesData,
   getAllLaunches,
+  getLaunchStats,
   scheduleNewLaunch,
   existsLaunchWithId,
   abortLaunchById,
 };
-
-//write test
