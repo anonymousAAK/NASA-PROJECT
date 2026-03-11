@@ -4,6 +4,7 @@ const launchesSchema = new mongoose.Schema({
   flightNumber: {
     type: Number,
     required: true,
+    index: true,
   },
   launchDate: {
     type: Date,
@@ -17,10 +18,6 @@ const launchesSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  // target: {
-  //     type: mongoose.ObjectId,
-  //     ref: 'Planet'
-  // }
   target: {
     type: String,
   },
@@ -36,6 +33,4 @@ const launchesSchema = new mongoose.Schema({
   },
 });
 
-// connects launches schema with "launches" collection
-// this is called compiling the model
 module.exports = mongoose.model('Launch', launchesSchema);

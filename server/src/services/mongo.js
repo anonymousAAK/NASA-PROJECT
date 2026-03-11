@@ -1,21 +1,22 @@
-require('dotenv').config();
 const mongoose = require('mongoose');
+const { config } = require('../config/config');
 
 mongoose.connection.once('open', () => {
   console.log('MongoDB connection ready');
 });
 
 mongoose.connection.on('error', (err) => {
-  console.error(err);
+  console.error('MongoDB connection error:', err);
 });
 
 async function mongoConnect() {
-  await mongoose.connect(process.env.MONGO_URL, {
-    useNewUrlParser: true, // handles how mongo parses mongo url
-    useFindAndModify: false, // disables the outdated way of updating mongo data
-    useCreateIndex: true,
-    useUnifiedTopology: true, // use the updated way of talking to clusters
-  });
+  const mongoUrl = config.mongoUrl || process.env.MONGO_URL;
+
+  if (!mongoUrl) {
+    throw new Error('MONGO_URL environment variable is not set');
+  }
+
+  await mongoose.connect(mongoUrl);
 }
 
 async function mongoDisconnect() {

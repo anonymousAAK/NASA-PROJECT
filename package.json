@@ -1,20 +1,32 @@
 {
-  "name": "08-nasa",
-  "version": "1.0.0",
-  "description": "",
+  "name": "nasa-mission-control",
+  "version": "2.0.0",
+  "description": "NASA Mission Control - Full-stack MERN application for managing space launches",
   "main": "index.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "install-server": "cd server && npm install",
     "install-client": "cd client && npm install",
     "install": "npm run install-server && npm run install-client",
-    "server": "npm run watch --prefix server",
+    "server": "npm run dev --prefix server",
     "client": "npm start --prefix client",
+    "dev": "npm-run-all --parallel client server",
     "watch": "npm-run-all --parallel client server",
     "deploy": "npm run build --prefix client && npm start --prefix server",
     "deploy-cluster": "npm run build --prefix client && npm run cluster --prefix server",
-    "test": "npm test --prefix server && npm test --prefix client"
+    "test": "npm test --prefix server && npm test --prefix client",
+    "test:server": "npm test --prefix server",
+    "test:client": "npm test --prefix client",
+    "lint": "npm run lint --prefix server"
   },
-  "keywords": [],
+  "keywords": [
+    "nasa",
+    "spacex",
+    "mission-control",
+    "mern"
+  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {
